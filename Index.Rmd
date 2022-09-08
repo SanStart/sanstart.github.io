@@ -1,0 +1,47 @@
+---
+title: "Airport_Precipitation_Location"
+author: "Sang'udi Sang'udi"
+date: "2022-09-08"
+output: html_document
+---
+
+
+
+
+## Data acquistion
+```{r setup, include=FALSE}
+
+library(riem)
+library(sf)
+library(leaflet)
+library(mapview)
+
+```
+```{r}
+network <- riem_networks()
+network
+
+co_riem <- riem_stations("CO_ASOS")
+
+co_spatial <- st_as_sf(co_riem, coords = c("lon", "lat"), crs = 4326)
+
+plot(co_spatial)
+
+```
+
+```{r}
+m <- leaflet(co_spatial) %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addCircleMarkers()
+m  # Print the map
+
+
+
+```
+
+
+```{r}
+mapview(co_spatial)
+
+
+```
