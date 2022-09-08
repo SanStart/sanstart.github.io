@@ -11,10 +11,20 @@ output: html_document
 ## Data acquistion
 ```{r setup, include=FALSE}
 
+
 library(riem)
 library(sf)
 library(leaflet)
 library(mapview)
+library(tidyverse)
+library(rayshader)
+library(USAboundaries)
+library(raster)
+library(elevatr)
+library(rgdal)
+library(magick)
+library(USAboundaries)
+library(USAboundariesData)
 
 ```
 ```{r}
@@ -45,3 +55,85 @@ mapview(co_spatial)
 
 
 ```
+
+```{r}
+co_equal_area <- co_spatial %>%
+  st_transform(2163) %>%
+  mutate(lat = st_coordinates(.)[,2],
+         long = st_coordinates(.)[,1])
+
+co_elev <- get_elev_raster(co_equal_area, z = 6) %>%
+  crop(., co_equal_area)
+
+
+
+
+
+
+```
+
+```{r}
+co_mat <- raster_to_matrix(co_elev)
+
+co_mat %>%
+  sphere_shade(texture = "desert") %>%
+  plot_3d(co_mat, zscale = 60)
+
+```
+
+```{r}
+denver <- us_cities(states = 'CO') %>%
+  filter(city == 'Denver') %>%
+  st_transform(2163) %>%
+  mutate(lat = st_coordinates(.)[,2],
+         long = st_coordinates(.)[,1])
+
+co_mat <- raster_to_matrix(co_elev)
+
+co_mat %>%
+  sphere_shade(texture = "desert") %>%
+  plot_3d(co_mat, zscale = 60)
+
+
+render_label(co_mat,
+              text = 'Denver',
+              lat = denver$lat,
+              long = denver$long,
+              extent = attr(co_elev, 'extent'),
+              zscale = 60)
+
+render_points(extent = attr(co_elev, 'extent'),
+              lat = co_equal_area$lat,
+              long = co_equal_area$long,
+              heightmap = co_mat,
+              zscale = 60,
+              offset = 100,
+              color = 'blue',
+              size = 9
+              )
+              
+            
+ rgl::rglwidget()             
+              
+```              
+              
+              
+              
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
